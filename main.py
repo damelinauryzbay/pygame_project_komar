@@ -6,11 +6,15 @@ import random
 pygame.init()
 size = width, height = 800, 600
 screen = pygame.display.set_mode(size)
+GRAVITY = 0.001
+
 
 class Plat:
     def __init__(self, x, y):
         self.x = x
         self.y = y
+
+
 # def load_image(name, colorkey=None):
 #     fullname = os.path.join(name)
 #     if not os.path.isfile(fullname):
@@ -24,6 +28,8 @@ background = pygame.transform.scale(background, (800, 600))
 all_sprites = pygame.sprite.Group()
 
 h = 0
+
+
 class Game(pygame.sprite.Sprite):
     def __init__(self, *group):
         global h
@@ -37,8 +43,10 @@ class Game(pygame.sprite.Sprite):
         self.grass.rect.y = h
         h += 140
 
+
 for _ in range(4):
     Game(all_sprites)
+
 
 class Komar():
     def __init__(self, *group):
@@ -51,6 +59,20 @@ class Komar():
         self.komar.rect.x = 300
         self.komar.rect.y = 500
 
+    # def update(self):
+    #     dist = 10
+    #     key = pygame.key.get_pressed()
+    #     if key[pygame.K_DOWN]:
+    #         print(self.komar.rect.top)
+    #         self.komar.rect.top += dist
+    #     elif key[pygame.K_UP]:
+    #         self.komar.rect.top -= dist
+    #     if key[pygame.K_RIGHT]:
+    #         self.komar.rect.left += dist
+    #     elif key[pygame.K_LEFT]:
+    #         self.komar.rect.left -= dist
+    # def update(self):
+
 
 Komar(all_sprites)
 
@@ -59,6 +81,9 @@ while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
+        elif event.type == pygame.KEYDOWN:
+            print('ooo')
+    # all_sprites.update()
     screen.blit(background, (0, 0))
     all_sprites.draw(screen)
     pygame.display.flip()
