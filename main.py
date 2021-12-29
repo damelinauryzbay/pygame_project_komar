@@ -23,19 +23,36 @@ background = pygame.image.load("eiffel.png")
 background = pygame.transform.scale(background, (800, 600))
 all_sprites = pygame.sprite.Group()
 
-# class Game(pygame.sprite.Sprite):
-
-ch = ["grass_floor.png", "grass1_floor.png"]
 h = 0
-for i in range(6):
-    grass_image = pygame.image.load(random.choice(ch))
-    grass = pygame.sprite.Sprite(all_sprites)
-    grass.image = grass_image
-    grass.rect = grass.image.get_rect()
-    grass.rect.x = random.randint(-100, 700)
-    grass.rect.y = h
-    h += 100
+class Game(pygame.sprite.Sprite):
+    def __init__(self, *group):
+        global h
+        self.ch = ["grass_floor.png", "grass1_floor.png"]
+        self.grass_image = pygame.image.load(random.choice(self.ch))
+        self.grass = pygame.sprite.Sprite(all_sprites)
+        self.grass.image = self.grass_image
+        self.grass.rect = self.grass.image.get_rect()
+        self.mask_of_grass = pygame.mask.from_surface(self.grass_image)
+        self.grass.rect.x = random.randint(-100, 700)
+        self.grass.rect.y = h
+        h += 140
 
+for _ in range(4):
+    Game(all_sprites)
+
+class Komar():
+    def __init__(self, *group):
+        self.komar_image = pygame.image.load("komar.png")
+        self.komar_image = pygame.transform.scale(self.komar_image, (104, 136))
+        self.komar = pygame.sprite.Sprite(all_sprites)
+        self.komar.image = self.komar_image
+        self.komar.rect = self.komar.image.get_rect()
+        self.mask_of_komar = pygame.mask.from_surface(self.komar_image)
+        self.komar.rect.x = 300
+        self.komar.rect.y = 500
+
+
+Komar(all_sprites)
 
 running = True
 while running:
