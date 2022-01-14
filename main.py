@@ -5,7 +5,7 @@ import random
 
 
 pygame.init()
-size = width, height = 800, 600
+size = width, height = 550, 600
 screen = pygame.display.set_mode(size)
 clock = pygame.time.Clock()
 
@@ -18,28 +18,27 @@ def load_image(name, colorkey=None):
     image = pygame.image.load(fullname)
     return image
 
-
 intro_image = load_image('intro.png')
 all_sprites = pygame.sprite.Group()
 platforms = pygame.sprite.Group()
 background = load_image("eiffel.png")
-background = pygame.transform.scale(background, (800, 600))
-h = 580
-
+background = pygame.transform.scale(background, (550, 600))
+game_ovr = load_image('game_over.png')
+game_ovr = pygame.transform.scale(game_ovr, (500, 298))
 
 class Islands(pygame.sprite.Sprite):
-    def __init__(self, x, *group):
-        super().__init__(all_sprites)
-        global h
-        self.length = [190, 160]
-        self.num1 = random.choice(self.length)
-        # self.image = pygame.Surface((self.num1, 20))
-        # self.image.fill((0, 153, 0))
-        self.image = load_image('baget.png')
+    def __init__(self, x, hgt, *group):
+        super().__init__(platforms)
+        self.image = load_image('baget1.png')
+        # self.image = pygame.transform.scale(self.image, (205, 30))
         self.rect = self.image.get_rect()
         self.rect.x = x
-        self.rect.y = h
+        self.rect.y = hgt
 
+    def update(self, upp):
+        self.rect.y += upp
+        if self.rect.top > 600:
+            self.kill()
 
 class Komar(pygame.sprite.Sprite):
     image = load_image("komar.png")
@@ -47,17 +46,16 @@ class Komar(pygame.sprite.Sprite):
     def __init__(self, *group):
         super().__init__(all_sprites)
         self.image = Komar.image
-
         self.rect = self.image.get_rect()
         # self.mask = pygame.mask.from_surface(self.image)
         self.velocity = 0
-        self.rect.center = (300, 300)
+        self.rect.center = (350, 300)
         self.side = False
 
-    def update(self):
+    def play(self, frst):
+        up = 0
         dx = 0
         dy = 0
-
         userInput = pygame.key.get_pressed()
 
         if userInput[pygame.K_LEFT]:
@@ -76,45 +74,49 @@ class Komar(pygame.sprite.Sprite):
 
         if self.rect.left + dx < 0:
             dx = -self.rect.left
-        if self.rect.right + dx > 800:
-            dx = 800 - self.rect.right
+        if self.rect.right + dx > 550:
+            dx = 550 - self.rect.right
 
         collision = pygame.sprite.spritecollide(self, platforms, False)
         if collision:
-            if self.rect.bottom < collision[0].rect.centery:
+            if self.rect.bottom < collision[0].rect.bottom:
                 if self.velocity > 0:
                     self.rect.bottom = collision[0].rect.top
                     dy = 0
                     self.velocity = -20
+        if frst:
+            if self.rect.bottom + dy > 600:
+                dy = 0
+                self.velocity = -20
+            # else:
+            #     dy = 0
+            #     self.ve
 
-        if self.rect.bottom + dy > 600:
-            dy = 0
-            self.velocity = -20
+        if self.rect.top <= 200:
+            if self.velocity < 0:
+                up = -dy
 
         self.rect.x += dx
-        self.rect.y += dy
+        self.rect.y += dy + up
 
+        if self.rect.top > 600:
+            self.kill()
+
+        return up
 
 switch = True
 komar = Komar()
 all_sprites.add(komar)
 
-for _ in range(5):
-    for _ in range(2):
-        num_x = random.randint(-100, 750)
-        if switch:
-            island = Islands(num_x)
-            switch = False
-        else:
-            island = Islands(num_x + random.randint(300, 450))
-            switch = True
-        platforms.add(island)
-    h -= 160
-
-
 class GameStates():
     def __init__(self):
         self.state = 'intro'
+        self.start = True
+        self.limit = 15
+        self.switch = True
+        self.h = 400
+        self.island = Islands(222, 440)
+        platforms.add(self.island)
 
     def intro(self):
         for event in pygame.event.get():
@@ -133,9 +135,27 @@ class GameStates():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
-        screen.blit(background, (0, 0))
-        all_sprites.draw(screen)
-        all_sprites.update()
+            if event.type == pygame.KEYDOWN:
+                self.start = False
+        up = komar.play(self.start)
+        if len(all_sprites) == 1:
+            screen.blit(background, (0, 0))
+            all_sprites.draw(screen)
+            platforms.draw(screen)
+        else:
+            screen.blit(game_ovr, (25, 151))
+        if len(platforms) < self.limit:
+            for _ in range(2):
+                num_x = random.randint(-100, 350)
+                num_y = self.island.rect.y - random.randint(90, 110)
+                if self.switch:
+                    self.island = Islands(num_x, num_y)
+                    self.switch = False
+                else:
+                    self.island = Islands(num_x + random.randint(250, 350), num_y)
+                    self.switch = True
+                platforms.add(self.island)
+        platforms.update(up)
         pygame.display.flip()
 
     def state_image(self):
